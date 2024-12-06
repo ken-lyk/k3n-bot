@@ -2,21 +2,6 @@ import 'dotenv/config';
 import { getRPSChoices } from './game.js';
 import { capitalize, InstallGlobalCommands } from './utils.js';
 
-// Get the game choices from game.js
-function createCommandChoices() {
-  const choices = getRPSChoices();
-  const commandChoices = [];
-
-  for (let choice of choices) {
-    commandChoices.push({
-      name: capitalize(choice),
-      value: choice.toLowerCase(),
-    });
-  }
-
-  return commandChoices;
-}
-
 // Simple test command
 const TEST_COMMAND = {
   name: 'test',
@@ -43,9 +28,49 @@ const WEATHER_COMMAND = {
   contexts: [0, 1, 2],
 };
 
+const WIKI_TODAY_COMMAND = {
+  name: 'wiki-today',
+  description: 'Wiki today command',
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+};
+
+const WIKI_RANDOM_COMMAND = {
+  name: 'wiki-random',
+  description: 'Wiki random command',
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+};
+
+
+const ABOUT_ME_COMMAND = {
+  name: 'about-me',
+  description: 'About me command',
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+};
+
+// Get the game choices from game.js
+function createCommandChoices() {
+  const choices = getRPSChoices();
+  const commandChoices = [];
+
+  for (let choice of choices) {
+    commandChoices.push({
+      name: capitalize(choice),
+      value: choice.toLowerCase(),
+    });
+  }
+
+  return commandChoices;
+}
+
 // Command containing options
-const CHALLENGE_COMMAND = {
-  name: 'challenge',
+const NEW_CHALLENGE_COMMAND = {
+  name: 'paper-scissors',
   description: 'Challenge to a match of rock paper scissors',
   options: [
     {
@@ -61,6 +86,14 @@ const CHALLENGE_COMMAND = {
   contexts: [0, 2],
 };
 
-const ALL_COMMANDS = [TEST_COMMAND, CHALLENGE_COMMAND, CURRENCY_COMMAND, WEATHER_COMMAND];
+const ALL_COMMANDS = [
+  TEST_COMMAND,
+  NEW_CHALLENGE_COMMAND,
+  CURRENCY_COMMAND,
+  WEATHER_COMMAND,
+  ABOUT_ME_COMMAND,
+  WIKI_TODAY_COMMAND,
+  WIKI_RANDOM_COMMAND,
+];
 
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);

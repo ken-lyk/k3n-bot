@@ -19,10 +19,10 @@ const PORT = process.env.PORT || 3000;
  */
 app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async function (req, res) {
   // Interaction type and data
-  const { type, data } = req.body;
+  const { type, data, user } = req.body;
+  console.log('req', req);
 
-  // console.log('req.body', req.body);
-  // console.log('req.headers', req.headers);
+  console.log('req.body', req.body);
 
   /**
    * Handle verification requests
@@ -37,15 +37,13 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
    */
   if (type === InteractionType.APPLICATION_COMMAND) {
     const { name } = data;
-
-    // "test" command
     if (name === 'test') {
-      // Send a message into the channel where command was triggered from
+      const username = user.username; // Get the Discord username
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           // Fetches a random emoji to send from a helper function
-          content: `hello world ${getRandomEmoji()} ${getRandomEmoji()}`,
+          content: `hello ${username} ${getRandomEmoji()} ${getRandomEmoji()}`,
         },
       });
     } 
@@ -122,6 +120,72 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       //   return res.status(500).json({ error: 'Failed to fetch weather data' });
       // }
     }
+    else if (name === 'about-me') {
+      const username = user.username; // Get the Discord username
+      let intro = `hello ${username} \n I am a bot created by Ken Lee to help you with your daily needs.`;
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          // Fetches a random emoji to send from a helper function
+          content: intro,
+        },
+      });
+    }
+    else if (name === 'wiki-today') {
+      const wikiTodayApi = `https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/${new Date().getMonth()}/${new Date().getDate()}`;
+      const response = await fetch(wikiTodayApi);
+      const wikiTodayData = await response.json(); // Parse the JSON response
+      var wikiTodayString = '';
+      let count = 0;
+      if(wikiTodayData.events) {
+        // wikiTodayString += `${wikiTodayData.events[0].year}: ${wikiTodayData.events[0].text} \n`;
+        for (let event of wikiTodayData.events) {
+          if (count > 2) {
+            break;
+          }
+          wikiTodayString += `${event.year}: ${event.text} \n`;
+          count++;
+        }
+      }
+      // console.log('wikiTodayString', wikiTodayString);
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          // Fetches a random emoji to send from a helper function
+          content: wikiTodayString,
+        },
+      });
+    }
+    else if (name === 'wiki-random') {
+      const startTimestamp = new Date('1800-01-01').getTime();
+      const endTimestamp = new Date().getTime();
+      const randomTimestamp = Math.floor(Math.random() * (endTimestamp - startTimestamp + 1)) + startTimestamp;
+      let newDate = new Date(randomTimestamp);
+
+      const wikiTodayApi = `https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/${newDate.getMonth()}/${newDate.getDate()}`;
+      // console.log('wikiTodayApi', wikiTodayApi);
+      // const response = await fetch(wikiTodayApi);
+      // const wikiTodayData = await response.json(); // Parse the JSON response
+      // var wikiTodayString = '';
+      // let count = 0;
+      // if(wikiTodayData.events) {
+      //   wikiTodayString += `${wikiTodayData.events[0].year}: ${wikiTodayData.events[0].text} \n`;
+      //   // for (let event of wikiTodayData.events) {
+      //   //   if (count > 1) {
+      //   //     break;
+      //   //   }
+      //   //   wikiTodayString += `${event.year}: ${event.text} \n`;
+      //   //   count++;
+      //   // }
+      // }
+      console.log('wikiTodayString', wikiTodayString);
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: wikiTodayApi,
+        },
+      });
+    }
     else {
       console.error(`unknown command: ${name}`);
       return res.status(400).json({ error: 'unknown command' });
@@ -133,7 +197,6 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 });
 
 app.get('/test', async function (req, res) {
-
   console.log('req.body', req.body);
   console.log('req.headers', req.headers); 
   return res.status(200).json({ message: 'success' });
